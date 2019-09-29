@@ -1,7 +1,7 @@
 #include "StatesHandler.h"
 #include <iostream>
 
-
+// 状態通知対応リストの初期化
 const StateKeyMap StatesHandler::stateKeyMapList[] = {
     { SAMPLE_STATE_A, KEY_C },
     { SAMPLE_STATE_B, KEY_D },
@@ -10,57 +10,51 @@ const StateKeyMap StatesHandler::stateKeyMapList[] = {
 };
 
 StatesHandler::StatesHandler()
-: currStates({0})
+: currStates{0}
 {}
 
-States_t StatesHandler::getStates()
+bool StatesHandler::getState(STATE_NAME stateName)
 {
-    return currStates;
+    return currStates[stateName];
 }
 
-void StatesHandler::setState(STATE_ID stateId, bool state)
+void StatesHandler::setState(STATE_NAME stateName, bool state)
 {
-    switch (stateId)
-    {
-        case 0:
-            currStates.sample_state_a = state;
-            break;
-        case 1:
-            currStates.sample_state_b = state;
-            break;
-        case 2:
-            currStates.sample_state_c = state;
-            break;
-        case 3:
-            currStates.sample_state_d = state;
-            break;
-        default:
-            break;
-    }
+    currStates[stateName] = state;
 }
 
 void StatesHandler::checkStates()
 {
-    std::cout << "sample_state_a : " << std::boolalpha << currStates.sample_state_a << std::endl;
-    std::cout << "sample_state_b : " << std::boolalpha << currStates.sample_state_b << std::endl;
-    std::cout << "sample_state_c : " << std::boolalpha << currStates.sample_state_c << std::endl;
-    std::cout << "sample_state_d : " << std::boolalpha << currStates.sample_state_d << std::endl;
+    std::cout << "sample_state_a : " << std::boolalpha << currStates[SAMPLE_STATE_A] << std::endl;
+    std::cout << "sample_state_b : " << std::boolalpha << currStates[SAMPLE_STATE_B] << std::endl;
+    std::cout << "sample_state_c : " << std::boolalpha << currStates[SAMPLE_STATE_C] << std::endl;
+    std::cout << "sample_state_d : " << std::boolalpha << currStates[SAMPLE_STATE_D] << std::endl;
 }
 
 void StatesHandler::informStates()
 {
-    if (currStates.sample_state_a) {
-        beep(stateKeyMapList[SAMPLE_STATE_A].key);
+    for (int i = 0; i < SAMPLE_STATE_NUM; ++i)
+    {
+        STATE_NAME stateName = (STATE_NAME)i;
+        if (currStates[stateName])
+        {
+            const char* key = getKey(stateName);
+            if (key != nullptr) beep(key);
+        }
     }
-    if (currStates.sample_state_b) {
-        beep(stateKeyMapList[SAMPLE_STATE_B].key);
+}
+
+const char* StatesHandler::getKey(const STATE_NAME stateName)
+{
+    for (int i = 0; i < SAMPLE_STATE_NUM; ++i)
+    {
+        if (stateKeyMapList[i].stateName == stateName)
+        {
+            return stateKeyMapList[i].key;
+        }
     }
-    if (currStates.sample_state_c) {
-        beep(stateKeyMapList[SAMPLE_STATE_C].key);
-    }
-    if (currStates.sample_state_d) {
-        beep(stateKeyMapList[SAMPLE_STATE_D].key);
-    }
+
+    return nullptr;
 }
 
 void StatesHandler::beep(const char* key)
